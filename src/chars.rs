@@ -67,6 +67,7 @@ impl<B: io::BufRead> Iterator for CharIter<B> {
 mod test {
     use super::*;
 
+    /// 3 bytes per char
     #[test]
     fn test_japanese() {
         let s = "おはよう世界";
@@ -82,6 +83,7 @@ mod test {
         assert_eq!(iter.next(), None);
     }
 
+    /// 4 bytes per char
     #[test]
     fn test_emoji() {
         let s = "💚🙈🌈";
@@ -91,6 +93,32 @@ mod test {
         assert_eq!(iter.next(), Some('💚'));
         assert_eq!(iter.next(), Some('🙈'));
         assert_eq!(iter.next(), Some('🌈'));
+        assert_eq!(iter.next(), None);
+    }
+
+    /// 1 byte per char
+    #[test]
+    fn test_ascii() {
+        let s = "abc";
+        let curs = io::Cursor::new(s.as_bytes());
+        let reader = io::BufReader::new(curs);
+        let mut iter = CharIter(reader);
+        assert_eq!(iter.next(), Some('a'));
+        assert_eq!(iter.next(), Some('b'));
+        assert_eq!(iter.next(), Some('c'));
+        assert_eq!(iter.next(), None);
+    }
+
+    /// 2 bytes per char
+    #[test]
+    fn test_greek() {        
+        let s = "ΔΣψ";
+        let curs = io::Cursor::new(s.as_bytes());
+        let reader = io::BufReader::new(curs);
+        let mut iter = CharIter(reader);
+        assert_eq!(iter.next(), Some('Δ'));
+        assert_eq!(iter.next(), Some('Σ'));
+        assert_eq!(iter.next(), Some('ψ'));
         assert_eq!(iter.next(), None);
     }
 }
