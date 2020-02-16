@@ -27,7 +27,7 @@ Mung is written in Rust and relies on the [official MongoDB Rust
 driver](https://crates.io/crates/mongodb) which is currently in alpha
 (BE WARNED!).
 
-## Install
+# Install
 
 You need rust 1.39+ installed. https://rustup.rs
 
@@ -35,7 +35,7 @@ You need rust 1.39+ installed. https://rustup.rs
 $ cargo install --git ssh://git@github.com/algesten/mung
 ```
 
-## Help
+# Help
 
 `mung -h` shows usage help.
 
@@ -61,7 +61,7 @@ ARGS:
     <COMMAND>    Command to run or "-" to read from stdin
 ```
 
-## Connect to a DB
+# Connect to a DB
 
 `mung` uses the URL form for connecting to MongoDB. The argument is either passed
 on the command line using `-u`, or read from the environment variable `MONGO_URL`.
@@ -87,14 +87,14 @@ $ mung -u "mongodb+srv://dbUser:dbUserPassword@clusterx-abc123.mongodb.net" \
        -d production 'db.users.find({ username: "martin" })'
 ```
 
-### Select database
+## Select database
 
 The default database is `test`, and is changed using the `-d`
 parameter. `mung` differs from mongo shell in that it ignores any
 database passed in the URL. The command line argument is _always_ used
 (or defaulting to `test` if not present).
 
-## Commands
+# Commands
 
 The commands tries to be as close to mongo shell as possible.
 
@@ -112,7 +112,9 @@ Commands are either read from the command line, or from stdin using
   * `mung -d prod 'db.user.find()'`
   * `echo 'db.user.find()' | mung -d prod -`
 
-### Streaming
+All content is expected to be utf-8.
+
+## Streaming
 
 Multiple commands are separated by whitespace, parsed and executed one
 by one in a streaming fashion. That means we can construct pipes that
@@ -136,7 +138,7 @@ this. Let's break that down.
   4. `mung -d test -`. One by one, read the commands from stdin and 
      execute them.
 
-### Shell escaping
+## Shell escaping
 
 Mongo's query language makes extensive use of `$` Depending on shell,
 this might clash with variable substituion syntax. For bash this works:
@@ -145,7 +147,9 @@ this might clash with variable substituion syntax. For bash this works:
   * `mung -d prod "db.user.find({ age: { \$gt: 42 } })"` (double quote
     and `\$`)
 
-## `db.collection.find(<query>, <projection>)`
+# find
+
+`db.collection.find(<query>, <projection>)`
 
 Queries for documents. See [mongo
 doc](https://docs.mongodb.com/manual/reference/method/db.collection.find/)
@@ -154,7 +158,7 @@ for how to construct queries.
 Both `query` and `projection` are optional. Without any arguments, all
 documents are returned.
 
-### JSONL not Array
+## JSONL not Array
 
 The output from `find()` is streaming, which means each JSON doc is
 printed straight to stdout. When `find()` returns multiple documents,
@@ -188,13 +192,13 @@ $ mung -d prod 'db.users.find({}, {_id: 1})' | jq '._id' | jq -s
 ]
 ```
 
-Examples
+### Examples
 
   * `mung -d prod 'db.users.find()'`
   * `mung -d prod 'db.users.find({ age: { $gt: 42 } })'`
   * `mung -d prod 'db.users.find({ age: { $gt: 42 } }, { name: 1 })'`
 
-### Sorting
+## Sorting
 
 Sorting is added as a tail to the find command and works like in
 [mongo
@@ -206,7 +210,7 @@ Example
 
   * `mung -d prod 'db.users.find().sort({ age: -1 }'`
 
-### `limit`, `skip` and `batchSize`
+## `limit`, `skip` and `batchSize`
 
 These options are added to the tail and works like in mongo shell.
 
@@ -217,40 +221,48 @@ These options are added to the tail and works like in mongo shell.
  * `db.collection.find().batchSize(1000)` (load 1000 results at a time). [See mongo
    doc](https://docs.mongodb.com/manual/reference/method/cursor.batchSize/)
 
-## `db.collection.count(<query>)`
+# count
+
+`db.collection.count(<query>)`
 
 Counts number of matching documents like [mongo
 shell](https://docs.mongodb.com/manual/reference/method/db.collection.count/).
 
-Examples
+### Examples
 
   * `mung -d prod 'db.users.count()'`
   * `mung -d prod 'db.users.count({ age: { $gt: 42 } })'`
 
-## `db.collection.distinct([field], <query>)`
+# distinct
+
+`db.collection.distinct([field], <query>)`
 
 Counts number of distinctly different values of `field` in
 `collection. Optionally provides a `query` filter. [See mongo
 docs](https://docs.mongodb.com/manual/reference/method/db.collection.distinct/).
 
-Examples
+### Examples
 
   * `mung -d prod 'db.users.distinct('age')'` (How many different age
     values users)
   * `mung -d prod 'db.users.distinct('age', { age: { $gt: 42 } })'`
     (How many different age values of users over 42)
 
-## `db.collection.insert([doc or array])`
+# insert
+
+`db.collection.insert([doc or array])`
 
 Inserts one or many docs into collection. See [mongo
 doc](https://docs.mongodb.com/manual/reference/method/db.collection.insert/).
 
-Examples
+### Examples
 
   * `mung -d prod 'db.users.insert({ name: "martin", age: 34 })'`
   * `mung -d prod 'db.users.insert([ { name: "martin", age: 34 }, { name: "G", age: 34 } ])'`
 
-## `db.collection.update([query], [update], <opts>)`
+# update
+
+`db.collection.update([query], [update], <opts>)`
 
 Updates one (or many with `opts.multi`) document. The `query` document
 is what to match, and `update` is the update to run. See [mongo
@@ -260,14 +272,14 @@ for details.
 By default, even if the query matches many documents, only one single
 document is updated unless we pass `opts.multi`.
 
-### Options
+## Options
 
   * `multi` to update more than one doc.
   * `upsert` to fall back to an insert if the query didn't match
     anything. See [mongo
     doc](https://docs.mongodb.com/manual/reference/method/db.collection.update/#update-upsert)
 
-Examples:
+### Examples:
 
   * `mung -d prod 'db.users.update({ _id: 'abcdef123' }, { $set: {
     age: 43 } })'`. Update user with specific id and set `age` field
@@ -276,12 +288,14 @@ Examples:
     cool: true } }, { multi: true })'`. Update all (multi) users over
     42 and set a field `cool` to `true`.
 
-## `db.collection.remove([query])`
+# remove
+
+`db.collection.remove([query])`
 
 Removes one or many documents matching the query. Pass `{}` to remove
 everything in the collection.
 
-Examples:
+### Examples:
 
   * `mung -d prod 'db.users.remove({ _id: 'abc123' })'`. Remove one
     document with specific id.
@@ -289,7 +303,7 @@ Examples:
     users named martin.
   * `mung -d prod 'db.users.remove({})'`. Remove all users.
 
-## Logging
+# Logging
 
 Use `-v` to get more logging and `-vv` for max logging. Credentials
 part of the URL will leak with logging turned on.
@@ -298,7 +312,7 @@ The `-v` targets only `mung` itself. To turn on logging for all
 dependent libraries, use the `MUNG_LOG` environment variable
 set to something like `MUNG_LOG=trace`.
 
-## License
+# License
 
 Copyright (c) 2020 Martin Algesten
 
