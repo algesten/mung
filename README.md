@@ -27,6 +27,15 @@ Mung is written in Rust and relies on the [official MongoDB Rust
 driver](https://crates.io/crates/mongodb) which is currently in alpha
 (BE WARNED!).
 
+### Commands implemented
+
+  * [`find`](#find)
+  * [`count`](#count)
+  * [`distinct`](#distinct)
+  * [`insert`](#insert)
+  * [`update`](#update)
+  * [`remove`](#remove)
+
 # Install
 
 You need rust 1.39+ installed. https://rustup.rs
@@ -141,7 +150,7 @@ this. Let's break that down.
 ## Shell escaping
 
 Mongo's query language makes extensive use of `$` Depending on shell,
-this might clash with variable substituion syntax. For bash this works:
+this might clash with variable syntax. For bash this works:
 
   * `mung -d prod 'db.user.find({ age: { $gt: 42 } })'` (single quote)
   * `mung -d prod "db.user.find({ age: { \$gt: 42 } })"` (double quote
