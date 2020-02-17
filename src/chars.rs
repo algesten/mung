@@ -111,7 +111,7 @@ mod test {
 
     /// 2 bytes per char
     #[test]
-    fn test_greek() {        
+    fn test_greek() {
         let s = "ΔΣψ";
         let curs = io::Cursor::new(s.as_bytes());
         let reader = io::BufReader::new(curs);

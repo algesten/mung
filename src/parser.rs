@@ -54,11 +54,12 @@ pub struct UpdateOpts {
 
 pub fn parse<B: io::BufRead>(tok: &mut Tokens<B>) -> Result<Option<Expr>, String> {
     debug!("Parse expression");
-    
+
     tok.skip_white();
 
     // end of stream
     if tok.peek().is_none() {
+        debug!("End of tokens");
         return Ok(None);
     }
 

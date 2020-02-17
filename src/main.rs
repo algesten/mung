@@ -127,13 +127,17 @@ fn handle(opts: &Opts) -> Result<(), Error> {
     trace!("Use db: {}", opts.dbname);
     let mut db = client.database(&opts.dbname);
 
-    if opts.command.trim() == "-" {
-        let reader = io::BufReader::new(io::stdin());
+    if read_stdin {
+        debug!("Read commands from stdin");
+        let stdin = io::stdin();
+        let lock = stdin.lock();
+        let reader = io::BufReader::new(lock);
         let mut tokens = token::tokenize(reader);
         while let Some(expr) = parser::parse(&mut tokens)? {
             execute(&mut db, expr, &opts)?;
         }
     } else {
+        debug!("Read commands from argument");
         let mut tokens = token::tokenize_str(&opts.command);
         while let Some(expr) = parser::parse(&mut tokens)? {
             execute(&mut db, expr, &opts)?;
