@@ -16,13 +16,10 @@ use crate::parser::Oper;
 use crate::parser::UpdateOpts;
 use bson::Bson;
 use colored_json::{ColorMode, ColoredFormatter, Output};
-use mongodb::options::auth::Credential;
-use mongodb::options::ClientOptions;
 use mongodb::options::FindOptions;
 use mongodb::options::UpdateModifications;
 use mongodb::options::UpdateOptions;
-use mongodb::Collection;
-use rpassword::prompt_password_stderr;
+use mongodb::sync::Collection;
 use serde::Serialize;
 use serde_json::ser::CompactFormatter;
 use serde_json::ser::PrettyFormatter;
@@ -42,10 +39,6 @@ struct Opts {
     /// Database to use
     #[structopt(short, long, env = "MONGO_DB", default_value = "test")]
     dbname: String,
-
-    /// Prompt for password
-    #[structopt(short = "W", long)]
-    password: bool,
 
     /// Compact instead of pretty printed output
     #[structopt(short, long)]
@@ -99,30 +92,8 @@ fn handle(opts: &Opts) -> Result<(), Error> {
     //
     let read_stdin = opts.command.trim() == "-";
 
-    debug!("Parse url: {}", opts.url);
-    let mut copts = ClientOptions::parse(&opts.url)?;
-
-    if opts.password {
-        if read_stdin {
-            return Err(Error::Usage(
-                "Can't both prompt for password and read commands from stdin".into(),
-            ));
-        }
-        let pass = prompt_password_stderr("Password: ")?;
-        if let Some(cred) = &mut copts.credential {
-            cred.password = Some(pass);
-        } else {
-            copts.credential = Some(Credential {
-                password: Some(pass),
-                ..Default::default()
-            });
-        }
-    }
-
-    trace!("Connect options: {:#?}", copts);
-
     debug!("Connect to db");
-    let client = mongodb::Client::with_options(copts)?;
+    let client = mongodb::sync::Client::with_uri_str(&opts.url)?;
 
     trace!("Use db: {}", opts.dbname);
     let mut db = client.database(&opts.dbname);
@@ -147,7 +118,7 @@ fn handle(opts: &Opts) -> Result<(), Error> {
     Ok(())
 }
 
-fn execute(db: &mut mongodb::Database, expr: parser::Expr, opts: &Opts) -> Result<(), Error> {
+fn execute(db: &mut mongodb::sync::Database, expr: parser::Expr, opts: &Opts) -> Result<(), Error> {
     trace!("Use collection: {}", expr.collection);
     let coll = db.collection(&expr.collection);
 
@@ -202,13 +173,13 @@ fn handle_find(
     trace!("Decode projection to bson");
     let proj = decode_bson(proj.unwrap_or("{}"))?;
 
-    let mut find_opts = FindOptions {
-        ..Default::default()
-    };
-    find_opts.projection = Some(proj);
-    find_opts.batch_size = cursor.batch_size;
-    find_opts.limit = cursor.limit;
-    find_opts.skip = cursor.skip;
+    let mut find_opts = FindOptions::builder()
+        .projection(Some(proj))
+        .batch_size(cursor.batch_size)
+        .limit(cursor.limit)
+        .skip(cursor.skip)
+        .build();
+
     if let Some(s) = cursor.sort {
         find_opts.sort = Some(decode_bson(&s)?);
     }
@@ -267,11 +238,7 @@ fn handle_update(
 
     let update_mod = UpdateModifications::Document(update);
 
-    let mut up_opts = UpdateOptions {
-        ..Default::default()
-    };
-
-    up_opts.upsert = uopts.upsert;
+    let up_opts = UpdateOptions::builder().upsert(uopts.upsert).build();
 
     let res = if uopts.multi.unwrap_or(false) {
         debug!("Call update_many");
@@ -302,7 +269,7 @@ fn handle_insert(coll: Collection, doc: &str, opts: &Opts) -> Result<(), Error> 
 
         let mut todo = vec![];
         for json in arr {
-            let bson: Bson = json.into();
+            let bson: Bson = bson::ser::to_bson(&json)?;
             if let Bson::Document(doc) = bson {
                 todo.push(doc);
             } else {
@@ -322,7 +289,7 @@ fn handle_insert(coll: Collection, doc: &str, opts: &Opts) -> Result<(), Error> 
     } else if json.is_object() {
         debug!("Decode doc as object");
 
-        let bson: Bson = json.into();
+        let bson: Bson = bson::ser::to_bson(&json)?;
         let doc = if let Bson::Document(doc) = bson {
             doc
         } else {
@@ -363,7 +330,7 @@ fn handle_remove(coll: Collection, doc: &str, opts: &Opts) -> Result<(), Error> 
 
 fn decode_bson(s: &str) -> Result<bson::Document, Error> {
     let json: Value = json5::from_str(s)?;
-    let bson: Bson = json.into();
+    let bson: Bson = bson::ser::to_bson(&json)?;
     let doc = if let Bson::Document(doc) = bson {
         doc
     } else {
@@ -372,7 +339,7 @@ fn decode_bson(s: &str) -> Result<bson::Document, Error> {
     Ok(doc)
 }
 
-fn write_cursor(cursor: mongodb::Cursor, opts: &Opts) -> Result<(), Error> {
+fn write_cursor(cursor: mongodb::sync::Cursor, opts: &Opts) -> Result<(), Error> {
     debug!("Write result from cursor");
     let rx = read_cursor(cursor);
     for doc in rx.into_iter() {
@@ -384,7 +351,7 @@ fn write_cursor(cursor: mongodb::Cursor, opts: &Opts) -> Result<(), Error> {
     Ok(())
 }
 
-fn read_cursor(cursor: mongodb::Cursor) -> Receiver<Result<bson::Document, Error>> {
+fn read_cursor(cursor: mongodb::sync::Cursor) -> Receiver<Result<bson::Document, Error>> {
     let (tx, rx) = sync_channel(10_000);
 
     std::thread::spawn(move || {

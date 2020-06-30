@@ -6,7 +6,7 @@ pub enum Error {
     Parse(String),
     Usage(String),
     MongoDb(mongodb::error::Error),
-    Bson(bson::DecoderError),
+    Bson(bson::ser::Error),
     Json(serde_json::Error),
     Json5(json5::Error),
     Io(io::Error),
@@ -40,8 +40,14 @@ impl From<mongodb::error::Error> for Error {
     }
 }
 
-impl From<bson::DecoderError> for Error {
-    fn from(v: bson::DecoderError) -> Self {
+// impl From<bson::de::Error> for Error {
+//     fn from(v: bson::de::Error) -> Self {
+//         Error::BsonDe(v)
+//     }
+// }
+
+impl From<bson::ser::Error> for Error {
+    fn from(v: bson::ser::Error) -> Self {
         Error::Bson(v)
     }
 }
