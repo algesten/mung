@@ -109,6 +109,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b41b7ea54a0c9d92199de89e20e58d49f02f8e699814ef3fdf266f6f748d15c7"
 
 [[package]]
+name = "base64"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3441f0f7b02788e948e47f457ca01f1d7e6d92c693bc132c22b087d3141c03ff"
+
+[[package]]
 name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -137,10 +143,29 @@ dependencies = [
 
 [[package]]
 name = "bson"
-version = "0.14.0"
+version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d61895d21e2194d1ce1d434cff69025daac1e49a8b4698eb04b05722dbc08b33"
+checksum = "3c177ed0122f24ce5e0f05bf9b29e79f3ac1a359bc504e0e14c3b34896c71c00"
 dependencies = [
+ "byteorder",
+ "chrono",
+ "hex 0.3.2",
+ "libc",
+ "linked-hash-map",
+ "md5",
+ "rand 0.7.3",
+ "serde",
+ "serde_json",
+ "time",
+]
+
+[[package]]
+name = "bson"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95cba0c807bb47ef40cce9c699e74ecd2aa77ae5ab838e0a645c58569495e406"
+dependencies = [
+ "base64 0.12.3",
  "byteorder",
  "chrono",
  "hex 0.3.2",
@@ -728,7 +753,7 @@ checksum = "ce266c2050e7ca928b9e6d77d16619eb6573ccaa440161dfc8247e6856ecb138"
 dependencies = [
  "base64 0.11.0",
  "bitflags",
- "bson",
+ "bson 0.14.1",
  "bufstream",
  "byteorder",
  "chrono",
@@ -761,7 +786,7 @@ dependencies = [
 name = "mung"
 version = "0.1.0"
 dependencies = [
- "bson",
+ "bson 1.0.0",
  "colored_json",
  "json5",
  "log",
