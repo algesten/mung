@@ -295,7 +295,7 @@ version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22deed3a8124cff5fa835713fa105621e43bbdc46690c3a6b68328a012d350d4"
 dependencies = [
- "proc-macro-error 1.0.3",
+ "proc-macro-error",
  "proc-macro2 1.0.18",
  "quote 1.0.2",
  "rustversion",
@@ -938,41 +938,15 @@ dependencies = [
 
 [[package]]
 name = "proc-macro-error"
-version = "0.4.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "052b3c9af39c7e5e94245f820530487d19eb285faedcb40e0c3275132293f242"
-dependencies = [
- "proc-macro-error-attr 0.4.9",
- "proc-macro2 1.0.18",
- "quote 1.0.2",
- "rustversion",
- "syn 1.0.33",
-]
-
-[[package]]
-name = "proc-macro-error"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc175e9777c3116627248584e8f8b3e2987405cabe1c0adf7d1dd28f09dc7880"
 dependencies = [
- "proc-macro-error-attr 1.0.3",
+ "proc-macro-error-attr",
  "proc-macro2 1.0.18",
  "quote 1.0.2",
  "syn 1.0.33",
  "version_check 0.9.1",
-]
-
-[[package]]
-name = "proc-macro-error-attr"
-version = "0.4.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d175bef481c7902e63e3165627123fff3502f06ac043d3ef42d08c1246da9253"
-dependencies = [
- "proc-macro2 1.0.18",
- "quote 1.0.2",
- "rustversion",
- "syn 1.0.33",
- "syn-mid",
 ]
 
 [[package]]
@@ -1336,9 +1310,9 @@ checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "structopt"
-version = "0.3.9"
+version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1bcbed7d48956fcbb5d80c6b95aedb553513de0a1b451ea92679d999c010e98"
+checksum = "de2f5e239ee807089b62adce73e48c625e0ed80df02c7ab3f068f5db5281065c"
 dependencies = [
  "clap",
  "lazy_static",
@@ -1347,12 +1321,12 @@ dependencies = [
 
 [[package]]
 name = "structopt-derive"
-version = "0.4.2"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "095064aa1f5b94d14e635d0a5684cf140c43ae40a0fd990708d38f5d669e5f64"
+checksum = "510413f9de616762a4fbeab62509bf15c729603b72d7cd71280fbca431b1c118"
 dependencies = [
  "heck",
- "proc-macro-error 0.4.9",
+ "proc-macro-error",
  "proc-macro2 1.0.18",
  "quote 1.0.2",
  "syn 1.0.33",
